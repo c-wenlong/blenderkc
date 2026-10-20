@@ -1,0 +1,5 @@
+# The bpy venv (.venv, Python 3.13 exactly: bpy 5.2 wheels are cp313 only).
+# `make deps` installs this; `build --host` installs it on the render host.
+# A change here changes every scene's plate key (keys.py reads the bpy pin).
+bpy==5.2.2
+Pillow==12.3.0

@@ -1,0 +1,42 @@
+[
+  {
+    "scene": "KT1_Package",
+    "title": "The package",
+    "lines": [
+      "Inside the package, each memory stack is eight dies on top of each other."
+    ]
+  },
+  {
+    "scene": "KT2_Boards",
+    "title": "Two boards",
+    "lines": [
+      "A gaming graphics card keeps its memory in separate chips around the GPU.",
+      "An AI server node has none of them: the memory sits inside each GPU package."
+    ]
+  },
+  {
+    "scene": "KT3_Wires",
+    "title": "Wires",
+    "lines": [
+      "Bandwidth is the clock rate times the number of wires carrying data.",
+      "Signals race down every wire at once, so a wider bus moves more bits."
+    ]
+  },
+  {
+    "scene": "KT4_Etch",
+    "title": "Etching a via",
+    "hold": 0.5,
+    "lines": [
+      "A Bosch etch cuts the hole in short cycles of plasma etching and passivation.",
+      "Then oxide, a tantalum barrier and a copper seed line the walls, and copper fills it."
+    ]
+  },
+  {
+    "scene": "KT5_Substrate",
+    "title": "Substrate",
+    "lines": [
+      "The substrate starts as glass fibre cloth soaked in epoxy, clad in copper foil.",
+      "Cut open, it is copper layers in resin, joined by tiny laser drilled vias."
+    ]
+  }
+]

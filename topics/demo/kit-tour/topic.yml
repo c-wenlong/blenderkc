@@ -1,0 +1,10 @@
+title: "A tour of the blenderkc kit"
+topic: gpu-architecture
+concepts: []
+tags: [demo]
+prerequisites: []
+materials: []
+prefix: KT
+narrated:
+  shots: shots/
+  output: kit-tour.mp4

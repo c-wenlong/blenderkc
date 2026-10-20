@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A second push to the same branch makes the first run's verdict irrelevant,
+# so stop paying for it.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test suite (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      # One version failing must not hide whether the others are fine.
+      fail-fast: false
+      matrix:
+        # The CLI is standard-library only and supports Python 3.10+
+        # (docs/DESIGN.md), so every version in that range is a real
+        # endpoint rather than an aspiration. 3.14 is here so a new
+        # interpreter breaks CI before it breaks a render.
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install the tools the tests shell out to
+        # ffmpeg is NOT on the ubuntu runner image: the pipeline and host
+        # tests build and probe real mp4s with it (and skip without it).
+        # rsync is what `build --host` pushes the snapshot and the topics
+        # tree with; the stand-in host tests run it for real.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg rsync
+
+      - name: Smoke the CLI
+        # The shim, not a module, so a packaging slip fails here. Each
+        # command lights up a different subsystem: `home` the two roots and
+        # the topics tree, `topics` the topic.yml catalogue, `api` the AST
+        # walk over the library and the usage lines, `new` the scaffolder.
+        # `doctor` is the one command that cannot pass on a runner (no .venv,
+        # no .env): it is judged on reporting rather than crashing.
+        run: |
+          python3 tools/cli/blenderkc --help
+          python3 tools/cli/blenderkc --version
+          python3 tools/cli/blenderkc home
+          python3 tools/cli/blenderkc home --json > /dev/null
+          BLENDERKC_TOPICS="$RUNNER_TEMP/elsewhere" python3 tools/cli/blenderkc home --json > /dev/null
+          python3 tools/cli/blenderkc topics
+          python3 tools/cli/blenderkc topics --json > /dev/null
+          python3 tools/cli/blenderkc api > /dev/null
+          python3 tools/cli/blenderkc new demo/ci-smoke --topic ci --scenes a
+          python3 tools/cli/blenderkc topics --json | grep -q ci-smoke
+          # A relative topics tree is refused, not resolved: every reader
+          # would name a different folder from its own working directory.
+          if BLENDERKC_TOPICS=relative/path python3 tools/cli/blenderkc home > /dev/null 2>&1; then
+              echo "a relative BLENDERKC_TOPICS was accepted"
+              exit 1
+          fi
+          python3 tools/cli/blenderkc doctor > doctor.log 2>&1 || true
+          if grep -q Traceback doctor.log; then
+              echo "doctor crashed instead of reporting:"
+              cat doctor.log
+              exit 1
+          fi
+          tail -2 doctor.log
+
+      - name: Run the test suite
+        # The same entry point `make test` uses first. The CLI tests run on
+        # any python3 (the library is a stand-in, gnosia-audio a fake); the
+        # test_lib_* files that need bpy or Pillow skip themselves when the
+        # import fails, and the pure-Python ones (timing, tracks, ease,
+        # project) run for real.
+        run: python3 -m unittest discover -s tests

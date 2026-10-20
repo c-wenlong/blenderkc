@@ -1,0 +1,8 @@
+# The narration layer, gnosia-audio, pinned to one commit: the same commit
+# tools/revideokc/requirements-narration.txt pins in self-learn, so all the
+# video tools voice alike and share every clip. `make narration-deps` installs
+# it into .venv beside bpy (measured 2026-10-09: it installs on Python 3.13,
+# pulling audioop-lts, and voices with kokoro). Move the pin by changing the
+# commit to a merged one and running `make narration-deps` again; `blenderkc
+# doctor` warns when .venv holds another commit.
+gnosia-audio @ git+https://github.com/c-wenlong/gnosia-audio.git@1fa754799ee04fb5da2b8b19dd92cd0ebec5ec3a

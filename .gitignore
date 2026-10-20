@@ -1,0 +1,21 @@
+.venv/
+.venv-*/
+__pycache__/
+*.pyc
+.env
+out/
+cache/
+state/
+stills/
+frames/
+public/
+*.blend1
+.DS_Store
+/plates/
+
+# Topics are content, not engine: only the demo ships publicly. Course
+# videos stay untracked (or in a private repo named by BLENDERKC_TOPICS).
+/topics/*
+!/topics/demo/
+/topics/demo/*
+!/topics/demo/kit-tour/
