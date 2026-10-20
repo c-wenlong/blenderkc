@@ -9,9 +9,26 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools" / "cli"))
 
 from blenderkc_cli import keys, remote, timeline  # noqa: E402
+from blenderkc_cli.__main__ import parse_args  # noqa: E402
 from blenderkc_cli.align import time_words  # noqa: E402
 from blenderkc_cli.repo import Repo  # noqa: E402
 from blenderkc_cli.yaml import YamlError, parse_yaml  # noqa: E402
+
+
+class Parser(unittest.TestCase):
+    def test_still_moments_survive_options_on_old_argparse(self):
+        # Python < 3.12.4 leaves positionals after an option as extras;
+        # parse_args routes them to still's moments.
+        a = parse_args(["--root", "/x", "still", "t", "--timing", "estimate", "HT1_Hook:3", "--json"])
+        self.assertEqual(a.command, "still")
+        self.assertEqual(a.topic, "t")
+        self.assertEqual(a.moments, ["HT1_Hook:3"])
+        a = parse_args(["--root", "/x", "still", "t", "HT1_Hook:3", "--timing", "estimate", "--json", "1s"])
+        self.assertEqual(sorted(a.moments), ["1s", "HT1_Hook:3"])
+
+    def test_extras_stay_an_error_on_other_verbs(self):
+        with self.assertRaises(SystemExit):
+            parse_args(["--root", "/x", "topics", "--json", "junk"])
 
 
 class Yaml(unittest.TestCase):
