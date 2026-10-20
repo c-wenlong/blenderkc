@@ -97,10 +97,25 @@ def _on_term(signum, frame):
     raise KeyboardInterrupt
 
 
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = build_parser()
+    args, extras = parser.parse_known_args(argv)
+    # Python < 3.12.4's argparse cannot feed positionals that follow an option
+    # to a nargs="*" positional, so `still <topic> --json <moment>` leaves the
+    # moments as extras. still's moment parser validates them; on any other
+    # verb extras are genuine junk and stay a hard error.
+    if extras:
+        if args.command == "still":
+            args.moments.extend(extras)
+        else:
+            parser.error("unrecognized arguments: %s" % " ".join(extras))
+    return args
+
+
 def main(argv: list[str] | None = None) -> int:
     import signal
     signal.signal(signal.SIGTERM, _on_term)
-    args = build_parser().parse_args(argv)
+    args = parse_args(argv)
     try:
         repo = Repo(find_root(args.root))
         if args.command == "doctor":
